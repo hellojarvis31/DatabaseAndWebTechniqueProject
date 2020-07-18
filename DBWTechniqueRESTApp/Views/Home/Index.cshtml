@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script>
+        var recurringTime = 10;
+
+        $(document).ready(function () {
+            getUpdatedProxiesData();
+            setRecurringUpdateRequest();
+        });
+
+        function setRecurringUpdateRequest() {
+            var today = new Date();
+            var time = "Current time:" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+            console.log(time);
+
+            updateProxiesData();
+            setTimeout(setRecurringUpdateRequest, minutesToMillisecondConverter(recurringTime));
+        }
+
+        function minutesToMillisecondConverter(minutes) {
+            return minutes * 60000;
+        }
+
+        function getUpdatedProxiesData() {
+            console.log("Get Updated Proxies-START");
+            var DynamicHtml = "";
+            $("#ProxyListDiv").html("");
+            $.ajax({
+                url: 'https://localhost:44366/api/Services/GetProxies',
+                type: 'GET',
+                success: function (data) {
+                    console.log("Get Updated Proxies-SUCCESS");
+                    DynamicHtml += "<table id='proxyListTable'>";
+                    DynamicHtml += "<tr>";
+                    DynamicHtml += "<th>ID</th>";
+                    DynamicHtml += "<th>IPPort</th>";
+                    DynamicHtml += "<th>IP</th>";
+                    DynamicHtml += "<th>Port</th>";
+                    DynamicHtml += "<th>Country</th>";
+                    DynamicHtml += "<th>Found Date</th>";
+                    DynamicHtml += "<th>Last Checked</th>";
+                    DynamicHtml += "<th>Status</th>";
+                    DynamicHtml += "</tr>";
+                    for (var i = 0; i < data.length; i++) {
+                        DynamicHtml += "<tr>";
+                        DynamicHtml += "<td>" + (i+1) + "</td>";
+                        DynamicHtml += "<td>" + data[i].IpPort + "</td>";
+                        DynamicHtml += "<td>" + data[i].Ip + "</td>";
+                        DynamicHtml += "<td>" + data[i].Port + "</td>";
+                        DynamicHtml += "<td>" + data[i].Country + "</td>";
+                        DynamicHtml += "<td>" + data[i].FoundDate + "</td>";
+                        DynamicHtml += "<td>" + data[i].LastChecked + "</td>";
+                        DynamicHtml += "<td>" + data[i].Status + "</td>";
+                        DynamicHtml += "</tr>";
+                    }
+                    DynamicHtml += "<table/>";
+                    $("#ProxyListDiv").append(DynamicHtml);
+                    //updateProxiesData();
+                },
+                error: function () {
+                    console.log("Get Updated Proxies-FAILURE");
+                    //updateProxiesData();
+                }
+            });
+        }
+
+        function updateProxiesData() {
+            console.log("Update Proxy Data-Start");
+            $.ajax({
+                url: 'https://localhost:44366/api/Services/UpdateProxies',
+                type: 'GET',
+                success: function () {
+                    console.log("Update Proxy Data-SUCCESS");
+                    getUpdatedProxiesData();
+                    findAndStoreProxies();
+                },
+                error: function () {
+                    console.log("Update Proxy Data-FAILURE");
+                    getUpdatedProxiesData();
+                    findAndStoreProxies();
+                }
+            });
+        }
+
+        function findAndStoreProxies() {
+            console.log("Find Proxy from Proxy Providers -Start");
+            $.ajax({
+                url: 'https://localhost:44366/api/Services/FindProxies',
+                type: 'GET',
+                success: function () {
+                    console.log("Find Proxy from Proxy Providers-SUCCESS");
+                },
+                error: function () {
+                    console.log("Find Proxy from Proxy Providers-FAILURE");
+                }
+            });
+        }
+
+    </script>
+    <style>
+        #proxyListTable {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #proxyListTable td, #proxyListTable th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #proxyListTable tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            #proxyListTable tr:hover {
+                background-color: #ddd;
+            }
+
+            #proxyListTable th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: #4CAF50;
+                color: white;
+            }
+    </style>
+</head>
+<body>
+    <div class="container" style="margin-top:5%">
+        <div id="ProxyListDiv"></div>
+    </div>
+</body>
+</html>
+
+
+
+
+
